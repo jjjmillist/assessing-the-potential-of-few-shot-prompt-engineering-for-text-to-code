@@ -22,7 +22,7 @@ def monte_carlo_accuracies(root):
 
 
 NO_PREFIX            = "results/evaluation/no_prefixes/code.pickle"
-CODE_ONLY            = "results/evaluation/random-python/code.pickle"
+CODE_ONLY            = "results/evaluation/code_only/code.pickle"
 BERT_AGNOSTIC_TOP    = "results/evaluation/bert_prompt_agnostic/top.pickle"
 BERT_AGNOSTIC_BOTTOM = "results/evaluation/bert_prompt_agnostic/bottom.pickle"
 BERT_AWARE           = "results/evaluation/bert_prompt_aware/code.pickle"
