@@ -1,19 +1,40 @@
+from pathlib import Path
 import pickle
-from scripts.accuracy import accuracy, accuracy_old
+from os import listdir
 
 import matplotlib.pyplot as pyplot
 
-NO_PREFIX = "results/mbpp-noprefix-09-05-23@18:10:30.pickle"
-CODE_ONLY = "results/random-python-10-05-23@20:23:17.pickle"
-BERT_AGNOSTIC = "results/10-05-23@13:02:33.pickle"
-BERT_AWARE = "results/23-04-23@14:33:31.pickle"
-FULL = "results/codeparrot-mbpp-28-04-23@20:50:35.pickle"
 
-no_prefix = accuracy(NO_PREFIX)
-code_only = accuracy(CODE_ONLY)
-top = accuracy(BERT_AGNOSTIC, ("top",))
-bottom = accuracy(BERT_AGNOSTIC, ("bottom",))
-bert_aware = accuracy_old(BERT_AWARE)
+def accuracy(filepath):
+    with open(filepath, "rb") as file:
+        results = pickle.load(file)
+    metrics, _ = results
+    return metrics["pass@1"]
+
+
+def monte_carlo_accuracies(root):
+    root = Path(root)
+    accuracies = []
+    for sub in listdir(root):
+        a = accuracy(root / sub / "code.pickle")
+        accuracies.append(a)
+    return accuracies
+
+
+NO_PREFIX            = "results/evaluation/no_prefixes/code.pickle"
+CODE_ONLY            = "results/evaluation/random-python/code.pickle"
+BERT_AGNOSTIC_TOP    = "results/evaluation/bert_prompt_agnostic/top.pickle"
+BERT_AGNOSTIC_BOTTOM = "results/evaluation/bert_prompt_agnostic/bottom.pickle"
+BERT_AWARE           = "results/evaluation/bert_prompt_aware/code.pickle"
+RANDOM                 = "results/evaluation/random_prefixes"
+
+no_prefix  = accuracy(NO_PREFIX)
+code_only  = accuracy(CODE_ONLY)
+top        = accuracy(BERT_AGNOSTIC_TOP)
+bottom     = accuracy(BERT_AGNOSTIC_BOTTOM)
+bert_aware = accuracy(BERT_AWARE)
+
+random_accuracies = monte_carlo_accuracies(RANDOM)
 
 print("No prefix:", no_prefix)
 print("Code only:", code_only)
@@ -21,14 +42,9 @@ print("Top:", top)
 print("Bottom:", bottom)
 print("BERT aware:", bert_aware)
 
-full_accuracies = []
-for n in range(30):
-    a = accuracy(FULL, (f"seed_{n}",))
-    full_accuracies.append(a)
-
-min_acc = min(full_accuracies)
-max_acc = max(full_accuracies)
-print(min_acc, max_acc)
+min_acc = min(random_accuracies)
+max_acc = max(random_accuracies)
+print(f"Random: {min_acc}-{max_acc}")
 
 x_axis = list(range(6))
 
