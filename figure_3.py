@@ -26,7 +26,7 @@ CODE_ONLY            = "results/evaluation/random-python/code.pickle"
 BERT_AGNOSTIC_TOP    = "results/evaluation/bert_prompt_agnostic/top.pickle"
 BERT_AGNOSTIC_BOTTOM = "results/evaluation/bert_prompt_agnostic/bottom.pickle"
 BERT_AWARE           = "results/evaluation/bert_prompt_aware/code.pickle"
-RANDOM                 = "results/evaluation/random_prefixes"
+RANDOM               = "results/evaluation/random_prefixes"
 
 no_prefix  = accuracy(NO_PREFIX)
 code_only  = accuracy(CODE_ONLY)
@@ -70,4 +70,6 @@ pyplot.xticks(
 )
 
 pyplot.ylabel("Accuracy (%)")
-pyplot.show()
+
+Path("results/figures").mkdir(parents=True, exist_ok=True)
+pyplot.savefig("results/figures/figure_3.png")

@@ -1,6 +1,4 @@
-from os import listdir
 from pathlib import Path
-import pickle
 
 import numpy as np
 import matplotlib.pyplot as pyplot
@@ -19,4 +17,6 @@ train_means = np.mean(train, axis=(1, 2))
 valid_means = np.mean(valid, axis=(1, 2))
 
 pyplot.plot(train_means, valid_means, "o")
-pyplot.show()
+
+Path("results/figures").mkdir(parents=True, exist_ok=True)
+pyplot.savefig("results/figures/figure_2.png")

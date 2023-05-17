@@ -1,3 +1,4 @@
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as pyplot
 
@@ -18,4 +19,5 @@ shuffled_means = np.mean(shuffled, axis=(1, 2))
 pyplot.bar(np.arange(len(means)), 100 * np.sort(means), label="Experiment")
 pyplot.bar(np.arange(len(means)), 100 * np.sort(shuffled_means), fc="none", hatch="//", lw=3, ec="orange", label="Control")
 
-pyplot.show()
+Path("results/figures").mkdir(parents=True, exist_ok=True)
+pyplot.savefig("results/figures/figure_1.png")
