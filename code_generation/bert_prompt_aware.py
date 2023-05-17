@@ -5,7 +5,7 @@ from time import time
 import pickle
 import numpy as np
 
-from data import mbpp_sanitized
+from data import dataset
 from workshop import *
 from predict import *
 
@@ -27,7 +27,7 @@ cosines = dot_products / norms
 assert cosines.shape == (len(data), len(data))
 
 k = 3
-mbpp = mbpp_sanitized()
+mbpp = dataset()
 prompts = []
 for test_index in range(len(mbpp)):
     top = np.argsort(

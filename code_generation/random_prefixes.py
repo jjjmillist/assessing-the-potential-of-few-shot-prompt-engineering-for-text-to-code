@@ -17,7 +17,7 @@ model = AutoModelForCausalLM.from_pretrained("codeparrot/codeparrot")
 model.to("cuda:0")
 
 k = 3
-mbpp = mbpp_sanitized()
+mbpp = dataset()
 
 seeds = list(range(30))
 test_indices = list(range(len(mbpp)))

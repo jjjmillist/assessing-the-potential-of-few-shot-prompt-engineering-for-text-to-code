@@ -5,12 +5,12 @@ from time import time
 import pickle
 import numpy as np
 
-from data import mbpp_sanitized
+from data import dataset
 from workshop import *
 from predict import *
 
 
-mbpp = mbpp_sanitized()
+mbpp = dataset()
 
 tokenizer = AutoTokenizer.from_pretrained("codeparrot/codeparrot")
 model = AutoModelForCausalLM.from_pretrained("codeparrot/codeparrot")

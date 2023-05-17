@@ -5,7 +5,7 @@ from time import time
 import pickle
 import numpy as np
 
-from data import mbpp_sanitized
+from data import dataset
 from workshop import *
 from predict import *
 
@@ -40,7 +40,7 @@ mean_similarities = cosines.mean(axis=0)
 top = np.argsort(mean_similarities)[-k:]
 bottom = np.argsort(mean_similarities)[:k]
 
-mbpp = mbpp_sanitized()
+mbpp = dataset()
 top_prefix = mbpp_prefix(mbpp[i] for i in top)
 bottom_prefix = mbpp_prefix(mbpp[i] for i in bottom)
 
