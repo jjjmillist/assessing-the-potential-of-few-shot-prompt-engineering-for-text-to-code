@@ -2,7 +2,7 @@ from   transformers import AutoTokenizer, AutoModelForCausalLM
 
 from data import dataset
 from predict import predict_batch
-from workshop import *
+from util import *
 from settings import *
 
 mbpp = dataset()

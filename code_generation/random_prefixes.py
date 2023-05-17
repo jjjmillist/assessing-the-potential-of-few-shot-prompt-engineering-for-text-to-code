@@ -6,7 +6,7 @@ import pickle
 import numpy as np
 
 from data import *
-from workshop import *
+from util import *
 from predict import *
 from settings import *
 

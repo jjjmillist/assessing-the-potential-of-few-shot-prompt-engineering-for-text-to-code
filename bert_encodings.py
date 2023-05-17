@@ -1,7 +1,7 @@
 import transformers
 import pickle
 
-from workshop import *
+from util import *
 from data import dataset
 
 model = transformers.BertModel.from_pretrained("bert-base-cased")
