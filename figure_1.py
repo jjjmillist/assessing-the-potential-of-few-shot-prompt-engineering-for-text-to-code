@@ -1,73 +1,21 @@
-from pathlib import Path
-import pickle
-from os import listdir
-
+import numpy as np
 import matplotlib.pyplot as pyplot
 
-
-def accuracy(filepath):
-    with open(filepath, "rb") as file:
-        results = pickle.load(file)
-    metrics, _ = results
-    return metrics["pass@1"]
+from evaluation import get_monte_carlo_results
 
 
-def monte_carlo_accuracies(root):
-    root = Path(root)
-    accuracies = []
-    for sub in listdir(root):
-        a = accuracy(root / sub / "code.pickle")
-        accuracies.append(a)
-    return accuracies
+result_matrix = get_monte_carlo_results()
 
+n_prefixes, n_prompts, n_samples = result_matrix.shape
 
-NO_PREFIX            = "results/evaluation/no_prefixes/code.pickle"
-CODE_ONLY            = "results/evaluation/random-python/code.pickle"
-BERT_AGNOSTIC_TOP    = "results/evaluation/bert_prompt_agnostic/top.pickle"
-BERT_AGNOSTIC_BOTTOM = "results/evaluation/bert_prompt_agnostic/bottom.pickle"
-BERT_AWARE           = "results/evaluation/bert_prompt_aware/code.pickle"
-RANDOM                 = "results/evaluation/random_prefixes"
+means = np.mean(result_matrix, axis=(1, 2))
+shuffled = np.empty_like(result_matrix)
+for problem in range(n_prompts):
+    for sample in range(n_samples):
+        shuffled[:, problem, sample] = np.random.permutation(result_matrix[:, problem, sample])
+shuffled_means = np.mean(shuffled, axis=(1, 2))
 
-no_prefix  = accuracy(NO_PREFIX)
-code_only  = accuracy(CODE_ONLY)
-top        = accuracy(BERT_AGNOSTIC_TOP)
-bottom     = accuracy(BERT_AGNOSTIC_BOTTOM)
-bert_aware = accuracy(BERT_AWARE)
+pyplot.bar(np.arange(len(means)), 100 * np.sort(means), label="Experiment")
+pyplot.bar(np.arange(len(means)), 100 * np.sort(shuffled_means), fc="none", hatch="//", lw=3, ec="orange", label="Control")
 
-random_accuracies = monte_carlo_accuracies(RANDOM)
-
-print("No prefix:", no_prefix)
-print("Code only:", code_only)
-print("Top:", top)
-print("Bottom:", bottom)
-print("BERT aware:", bert_aware)
-
-min_acc = min(random_accuracies)
-max_acc = max(random_accuracies)
-print(f"Random: {min_acc}-{max_acc}")
-
-x_axis = list(range(6))
-
-pyplot.grid(axis="y")
-pyplot.gca().set_axisbelow(True)
-
-pyplot.bar(
-    x_axis[1:],
-    [no_prefix, code_only, top, bottom, bert_aware],    
-)
-pyplot.bar(
-    x_axis[0],
-    max_acc,
-)
-pyplot.bar(
-    x_axis[0],
-    min_acc,
-)
-
-pyplot.xticks(
-    x_axis,
-    ["Full", "No prefix", "Code only", "BERT agnostic\n(top)", "BERT agnostic\n(bottom)", "BERT aware"]
-)
-
-pyplot.ylabel("Accuracy (%)")
 pyplot.show()
