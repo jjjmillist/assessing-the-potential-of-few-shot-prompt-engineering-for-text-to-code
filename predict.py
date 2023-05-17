@@ -1,6 +1,7 @@
 import torch
 from time import time
 import pickle
+from pathlib import Path
 
 
 def predict_batch(model, tokenizer, prompts, n_samples, k, output_path):
@@ -28,6 +29,7 @@ def predict_batch(model, tokenizer, prompts, n_samples, k, output_path):
             n_prompts += 1
             print(f"  {n_prompts}/{len(prompts)}, average {total_time / n_prompts:.2f} seconds per prompt")
 
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "wb") as file:
         pickle.dump(all_responses, file)
 
