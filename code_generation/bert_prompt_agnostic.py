@@ -46,7 +46,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_uri)
 model = AutoModelForCausalLM.from_pretrained(model_uri)
 model.to("cuda:0")
 
-root = output_directory("bert_prompt_agnostic")
+root = output_directory("code/bert_prompt_agnostic")
 for prefix, name in ((top_prefix, "top"), (bottom_prefix, "bottom")):
     prompts = []
     for test_row in mbpp:

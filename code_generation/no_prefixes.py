@@ -24,7 +24,7 @@ model = AutoModelForCausalLM.from_pretrained(model_uri)
 
 model.to("cuda:0")
 
-root = output_directory("no_prefixes")
+root = output_directory("code/no_prefixes")
 
 predict_batch(
     model=model,

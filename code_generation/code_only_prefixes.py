@@ -14,7 +14,7 @@ model = AutoModelForCausalLM.from_pretrained(model_uri)
 
 model.to("cuda:0")
 
-root = output_directory("code_only")
+root = output_directory("code/code_only")
 
 total_time = 0
 n_prompts = 0

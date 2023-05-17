@@ -20,7 +20,7 @@ mbpp = dataset()
 seeds = list(range(n_monte_carlo_prefixes))
 test_indices = list(range(len(mbpp)))
 
-root = output_directory("random_prefixes")
+root = output_directory("code/random_prefixes")
 for seed in seeds:
     prompts = []
     rng = np.random.default_rng(seed)

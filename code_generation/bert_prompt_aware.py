@@ -48,7 +48,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_uri)
 model = AutoModelForCausalLM.from_pretrained(model_uri)
 model.to("cuda:0")
 
-root = output_directory("bert_prompt_aware")
+root = output_directory("code/bert_prompt_aware")
 predict_batch(
     model=model,
     tokenizer=tokenizer,
