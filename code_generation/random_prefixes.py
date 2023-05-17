@@ -8,49 +8,37 @@ import numpy as np
 from data import *
 from workshop import *
 from predict import *
+from settings import *
 
 
-root = output_directory("codeparrot-mbpp")
-
-tokenizer = AutoTokenizer.from_pretrained("codeparrot/codeparrot")
-model = AutoModelForCausalLM.from_pretrained("codeparrot/codeparrot")
+tokenizer = AutoTokenizer.from_pretrained(model_uri)
+model = AutoModelForCausalLM.from_pretrained(model_uri)
 model.to("cuda:0")
 
-k = 3
 mbpp = dataset()
 
-seeds = list(range(30))
+seeds = list(range(n_monte_carlo_prefixes))
 test_indices = list(range(len(mbpp)))
-batch_size = 20
 
-t0 = time()
+prompts = []
+
+root = output_directory("random_prefixes")
 for seed in seeds:
-    with torch.no_grad():
-        rng = np.random.default_rng(seed)
-        writers = [OutputWriter(root / f"seed_{seed}" / f"output_{n}") for n in range(batch_size)]
-        prompts = []
+    rng = np.random.default_rng(seed)
+    for test_index in test_indices:
+        test_instance = mbpp[test_index]
+        train_indices = rng.choice(len(mbpp), size=n_contextual_examples, replace=False)
+        training_instances = [mbpp[i] for i in train_indices]
 
-        for test_index in test_indices:
-            test_instance = mbpp[test_index]
-            train_indices = rng.choice(len(mbpp), size=3, replace=False)
-            training_instances = [mbpp[i] for i in train_indices]
-
-            prefix_and_prompt = few_shot_mbpp(test_instance, training_instances)
-            
-            prompts.append(prefix_and_prompt)
-
-        with open(root / f"seed_{seed}_prompts.pickle", "wb") as prompt_file:
-            pickle.dump(prompts, prompt_file)
+        prefix_and_prompt = few_shot_mbpp(test_instance, training_instances)
         
-        for prompt in prompts:
-            responses = predict(
-                model,
-                tokenizer,
-                prompt,
-                stopping_strategy=stop_on_comment,
-                k=10,
-                batch_size=batch_size
-            )
+        prompts.append(prefix_and_prompt)
 
-            for text, writer in zip(responses, writers):
-                writer.write(text)
+    predict_batch(
+        model=model,
+        tokenizer=tokenizer,
+        prompts=prompts,
+        n_samples=n_samples,
+        k=n_distribution_cutoff,
+        output_path=root / f"prefix_{seed}" / "code.pickle"
+    )

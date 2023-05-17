@@ -1,4 +1,35 @@
 import torch
+from time import time
+import pickle
+
+
+def predict_batch(model, tokenizer, prompts, n_samples, k, output_path):
+    total_time = 0
+    n_prompts = 0
+    all_responses = []
+    with torch.no_grad():
+        for prompt in prompts:
+            t0 = time()
+            responses = predict(
+                model,
+                tokenizer,
+                prompt,
+                stopping_strategy=stop_on_comment,
+                k=10,
+                batch_size=n_samples
+            )
+            t1 = time()
+
+            all_responses.append(responses)
+
+            print(f"{t1 - t0:.2f} seconds")
+
+            total_time += t1 - t0
+            n_prompts += 1
+            print(f"  {n_prompts}/{len(prompts)}, average {total_time / n_prompts:.2f} seconds per prompt")
+
+    with open(output_path, "wb") as file:
+        pickle.dump(all_responses, file)
 
 
 def stop_on_comment(text):
@@ -15,7 +46,7 @@ def predict(model, tokenizer, prompt, stopping_strategy=None, k=10, batch_size=1
     inputs = tokenizer([prompt] * batch_size, return_tensors="pt").to("cuda:0")
     prompt_length = inputs["input_ids"].shape[1]
     n_generated_tokens = 0
-    context_size = model.config.n_ctx
+    context_size = 1024
 
     # print(f"Running prediction on a prompt with {prompt_length} tokens")
 

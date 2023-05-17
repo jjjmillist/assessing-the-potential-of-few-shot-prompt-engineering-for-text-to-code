@@ -1,11 +1,15 @@
 import json
+from settings import n_data
 
 
 def dataset():
     with open("/home/ICTDOMAIN/d20126116/Datasets/MBPP/sanitized.json") as file:
         rows = json.load(file)
 
-    return rows
+    if n_data is not None:
+        return rows[:n_data]
+    else:
+        return rows
 
 
 def few_shot_mbpp(test_instance, training_instances):

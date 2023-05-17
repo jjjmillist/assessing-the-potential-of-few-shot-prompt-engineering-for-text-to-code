@@ -1,16 +1,14 @@
-import transformers
-import torch
 from   transformers import AutoTokenizer, AutoModelForCausalLM
-from time import time
 import pickle
 import numpy as np
 
 from data import dataset
 from workshop import *
 from predict import *
+from settings import *
 
 
-with open("results/23-04-23@12:55:53/mbpp_sanitized_with_bert_encodings.pickle", "rb") as file:
+with open("results/mbpp_sanitized_with_bert_encodings.pickle", "rb") as file:
     data = pickle.load(file)
 
 BERT_DIMENSION = 768
@@ -26,7 +24,6 @@ assert norm_products.shape == (len(data), len(data))
 cosines = dot_products / norms
 assert cosines.shape == (len(data), len(data))
 
-k = 3
 mbpp = dataset()
 prompts = []
 for test_index in range(len(mbpp)):
@@ -34,7 +31,7 @@ for test_index in range(len(mbpp)):
         cosines[test_index]
     )
     prefix_and_prompt = ""
-    for i in top[-(k + 1):-1]:
+    for i in top[-(n_contextual_examples + 1):-1]:
         for line in mbpp[i]["prompt"].splitlines():
             prefix_and_prompt += "# " + line + "\n"
         prefix_and_prompt += mbpp[i]["code"] + "\n\n"
@@ -47,42 +44,18 @@ for test_index in range(len(mbpp)):
     
     prompts.append(prefix_and_prompt)
 
-tokenizer = AutoTokenizer.from_pretrained("codeparrot/codeparrot")
-model = AutoModelForCausalLM.from_pretrained("codeparrot/codeparrot")
+tokenizer = AutoTokenizer.from_pretrained(model_uri)
+model = AutoModelForCausalLM.from_pretrained(model_uri)
 
 model.to("cuda:0")
 
-n_samples = 20
-batch_size = 20
-
 root = output_directory()
 
-writers = [OutputWriter(root / f"output_{n}") for n in range(n_samples)]
-
-total_time = 0
-n_prompts = 0
-
-with torch.no_grad():
-    for prompt in prompts:
-        t0 = time()
-        all_responses = []
-        while len(all_responses) < n_samples:
-            responses = predict(
-                model,
-                tokenizer,
-                prompt,
-                stopping_strategy=stop_on_comment,
-                k=10,
-                batch_size=batch_size
-            )
-            all_responses += responses
-        t1 = time()
-
-        print(f"{t1 - t0:.2f} seconds")
-
-        total_time += t1 - t0
-        n_prompts += 1
-        print(f"  {n_prompts}/{len(prompts)}, average {total_time / n_prompts:.2f} seconds per prompt")
-
-        for text, writer in zip(all_responses, writers):
-            writer.write(text)
+predict_batch(
+    model=model,
+    tokenizer=tokenizer,
+    prompts=prompts,
+    n_samples=n_samples,
+    k=n_distribution_cutoff,
+    output_path=root / "code.pickle"
+)
