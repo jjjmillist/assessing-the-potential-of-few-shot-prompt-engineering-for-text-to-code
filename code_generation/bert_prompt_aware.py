@@ -8,12 +8,12 @@ from predict import *
 from settings import *
 
 
-with open("results/mbpp_sanitized_with_bert_encodings.pickle", "rb") as file:
+with open("results/bert_encodings/mbpp_sanitized_with_bert_encodings.pickle", "rb") as file:
     data = pickle.load(file)
 
 BERT_DIMENSION = 768
 
-embeddings = np.array([row["bert_embedding"].detach().numpy() for row in data])
+embeddings = np.array([row["bert_encoding"].detach().numpy() for row in data])
 assert embeddings.shape == (len(data), BERT_DIMENSION)
 dot_products = embeddings.dot(embeddings.T)
 assert dot_products.shape == (len(data), len(data))
@@ -46,11 +46,9 @@ for test_index in range(len(mbpp)):
 
 tokenizer = AutoTokenizer.from_pretrained(model_uri)
 model = AutoModelForCausalLM.from_pretrained(model_uri)
-
 model.to("cuda:0")
 
-root = output_directory()
-
+root = output_directory("bert_prompt_aware")
 predict_batch(
     model=model,
     tokenizer=tokenizer,

@@ -18,12 +18,12 @@ def mbpp_prefix(components):
     return prefix
 
 
-with open("results/mbpp_sanitized_with_bert_encodings.pickle", "rb") as file:
+with open("results/bert_encodings/mbpp_sanitized_with_bert_encodings.pickle", "rb") as file:
     data = pickle.load(file)
 
 BERT_DIMENSION = 768
 
-embeddings = np.array([row["bert_embedding"].detach().numpy() for row in data])
+embeddings = np.array([row["bert_encoding"].detach().numpy() for row in data])
 assert embeddings.shape == (len(data), BERT_DIMENSION)
 dot_products = embeddings.dot(embeddings.T)
 assert dot_products.shape == (len(data), len(data))
@@ -44,14 +44,9 @@ bottom_prefix = mbpp_prefix(mbpp[i] for i in bottom)
 
 tokenizer = AutoTokenizer.from_pretrained(model_uri)
 model = AutoModelForCausalLM.from_pretrained(model_uri)
-
 model.to("cuda:0")
 
-root = output_directory()
-
-total_time = 0
-n_prompts = 0
-
+root = output_directory("bert_prompt_agnostic")
 for prefix, name in ((top_prefix, "top"), (bottom_prefix, "bottom")):
     prompts = []
     for test_row in mbpp:
@@ -61,7 +56,7 @@ for prefix, name in ((top_prefix, "top"), (bottom_prefix, "bottom")):
             if line.startswith("def "):
                 prefix_and_prompt += line.strip() + "\n"
                 break
-    prompts.append(prefix_and_prompt)
+        prompts.append(prefix_and_prompt)
                 
     predict_batch(
         model=model,
@@ -69,5 +64,5 @@ for prefix, name in ((top_prefix, "top"), (bottom_prefix, "bottom")):
         prompts=prompts,
         n_samples=n_samples,
         k=n_distribution_cutoff,
-        output_path=root / name + ".pickle"
+        output_path=root / (name + ".pickle")
     )
