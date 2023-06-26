@@ -19,4 +19,4 @@ valid_means = np.mean(valid, axis=(1, 2))
 pyplot.plot(train_means, valid_means, "o")
 
 Path("results/figures").mkdir(parents=True, exist_ok=True)
-pyplot.savefig("results/figures/figure_2.png")
+pyplot.savefig("results/figures/figure_2.png", dpi=200, bbox_inches="tight")
