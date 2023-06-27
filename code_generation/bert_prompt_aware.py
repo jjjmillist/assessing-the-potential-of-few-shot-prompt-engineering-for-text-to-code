@@ -13,15 +13,15 @@ with open("results/bert_encodings/mbpp_sanitized_with_bert_encodings.pickle", "r
 
 BERT_DIMENSION = 768
 
-embeddings = np.array([row["bert_encoding"].detach().numpy() for row in data])
+embeddings = np.array([row["bert_embedding"].detach().numpy() for row in data])
 assert embeddings.shape == (len(data), BERT_DIMENSION)
 dot_products = embeddings.dot(embeddings.T)
 assert dot_products.shape == (len(data), len(data))
-norms = np.linalg.norm(dot_products, 2, axis=1)
+norms = np.linalg.norm(embeddings, 2, axis=1)
 assert norms.shape == (len(data),)
 norm_products = norms[:, None].dot(norms[None, :])
 assert norm_products.shape == (len(data), len(data))
-cosines = dot_products / norms
+cosines = dot_products / norm_products
 assert cosines.shape == (len(data), len(data))
 
 mbpp = dataset()
@@ -31,7 +31,15 @@ for test_index in range(len(mbpp)):
         cosines[test_index]
     )
     prefix_and_prompt = ""
-    for i in top[-(n_contextual_examples + 1):-1]:
+
+    top_indices = top[-(n_contextual_examples + 1):]
+    top_indices = [i for i in top_indices if i != test_index]
+    if len(top_indices) > n_contextual_examples:
+        top_indices = top_indices[1:]
+    
+    for i in top_indices:
+        assert i != test_index
+        
         for line in mbpp[i]["prompt"].splitlines():
             prefix_and_prompt += "# " + line + "\n"
         prefix_and_prompt += mbpp[i]["code"] + "\n\n"
